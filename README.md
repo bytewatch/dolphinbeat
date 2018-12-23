@@ -53,16 +53,16 @@ make
 ## Kafka
 This is a sink used for production. `Dolphinbeat` write data encoded with Protobuf into Kafka and business consumes data from Kafka. 
 
-Business need use [client library]() to decode data in Kafka message, do stream processing on the binlog stream. 
+Business need use [client library](sink/kafka/client) to decode data in Kafka message, do stream processing on the binlog stream. 
 
-The Protobuf protocol is presented in [protoco.go](). 
+The Protobuf protocol is presented in [protoco.go](sink/kafka/protocol). 
 
 Kafka sink has following features:
 * Strong-ordered delivery: business will receive events in the same order with MySQL binlog. 
 * Exactly-once delivery: client library can dedup duplicated message with same sequence number which may caused by producer retry or Kafka failover.
 * Unlimited event size: `dolphinbeat` use fragments algorithm like IPV4 if the binlog event is bigger than Kafka's max message size.
 
-A small example is presented in [kafka-consumer]().
+A small example is presented in [kafka-consumer](cmd/tools/kafka-consumer).
 
 `kafka-consumer` is a command tool to  decode data in Kafka message and print out with JSON.
 
