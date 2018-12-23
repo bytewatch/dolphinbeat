@@ -1,0 +1,57 @@
+mysql_addr = "${MYSQL_ADDR}"
+mysql_user = "${MYSQL_USER}"
+mysql_password = "${MYSQL_PASSWORD}"
+mysql_charset = "${MYSQL_CHARSET}"
+
+
+flavor = "${FLAVOR}"
+
+gtid_enabled = ${GTID_ENABLED}
+
+mysqldump = "mysqldump"
+
+skip_master_data = ${SKIP_MASTER_DATA}
+
+
+[log]
+  dir = "${DATA_DIR}/logs"
+  level = "info"
+
+[http_server]
+  addr = "${HTTP_SERVER_ADDR}"
+
+[election]
+  enabled = false
+
+[checkpoint]
+  interval = 10
+  storage = "file"
+  dir = "${DATA_DIR}/etc"
+
+[schema_tracker]
+  storage = "boltdb"
+  dir = "${DATA_DIR}/etc"
+
+
+[[sink]]
+  enabled=true
+  type="stdout"
+  name="test_stdout"
+  include_table=[]
+  exclude_table=[]
+  [sink.cfg]
+    encoder="json"
+
+[[sink]]
+  enabled=false
+  type="kafka"
+  name="test_kafka"
+  include_table=[]
+  exclude_table=[]
+  [sink.cfg]
+    broker_list="172.17.0.2:9092"
+    topic="my_topic"
+    partition=0
+    compression="zlib"
+    max_payload_size=1048576
+

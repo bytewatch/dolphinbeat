@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+
+enum OperationType {
+	ROTATE = 0;
+	GTID   = 1;
+	BEGIN  = 2;
+	COMMIT = 3;
+	INSERT = 4;
+	UPDATE = 5;
+	DELETE = 6;
+	QUERY  = 7;
+	DDL    = 8;
+}
+enum InnerType {
+  DECIMAL   =0;
+  TINY      =1;
+  SHORT     =2;
+  LONG      =3;
+  FLOAT     =4;
+  DOUBLE    =5;
+  NULL      =6;
+  TIMESTAMP =7;
+  LONGLONG  =8;
+  INT24     =9;
+  DATE      =10;
+  TIME      =11;
+  DATETIME  =12;
+  YEAR      =13;
+  NEWDATE   =14;
+  VARCHAR   =15;
+  BIT       =16;
+  TIMESTAMP2=17;
+  DATETIME2 =18;
+  TIME2     =19;
+
+  JSON        = 245;
+  NEWDECIMAL  = 246;
+  ENUM        = 247;
+  SET         = 248;
+  TINY_BLOB   = 249;
+  MEDIUM_BLOB = 250;
+  LONG_BLOB   = 251;
+  BLOB        = 252;
+  VAR_STRING  = 253;
+  STRING      = 254;
+  GEOMETRY    = 255;
+}
+
+enum Compression {
+    NONE = 0;
+    ZLIB = 1;
+    GZIP = 2;
+}
+
+message Message {
+    uint32 version = 1;
+
+    // The producer who produces this kafka message
+    uint64 producer_id = 2;
+
+    // The sequence number of message, we dedup by this number
+    uint64  seq = 5;
+  
+    // If this message is a fragment, and there are more fragments coming.
+    // Only all fragments of the same group received, we can unmarshal the payload.
+    bool more_fragment = 6;
+    // The group identify of those fragment
+    uint64 group_id = 7;
+   
+    Compression compression = 8;
+   
+    //int64 checksum = 9;
+
+    bytes payload = 15;
+}
+
+message Payload {
+    repeated Operation ops = 1;
+}
+
+message Column {
+    bool is_null = 1;
+    string value = 2;
+}
+
+message Row  {
+	repeated Column before  = 1;
+	repeated Column after = 2;
+}
+
+message ColumnDef {
+	string name = 1;
+
+	string sql_type  = 2;
+    InnerType inner_type = 3;
+
+	bool unsigned = 4;
+
+	string key = 5;
+
+	string charset = 6;
+}
+
+message TableDef {
+	string database = 1;
+	string name = 2;
+	repeated ColumnDef columns = 3;
+}
+
+message Progress {
+	string flavor  = 1;
+	uint32 server_id = 2;
+	string log_name = 3;
+	uint32 log_pos = 4;
+	string gset = 5;
+}
+
+message OperationHeader {
+	uint32 server_id = 1;
+    OperationType type = 2;
+	uint32 timestamp = 3;
+	uint32 log_pos = 4;
+	//string log_name = 4;
+	//uint32 timestamp2 = 5;
+}
+
+message Operation {
+    OperationHeader header = 1;
+
+	// Next_log_name and next_log_pos field is for Rotate operation
+	string next_log_name = 6;
+	uint32 next_log_pos = 7;
+
+	// Gtid, last_committed and sequence_number field is for GTID operation
+	string gtid = 8;
+	int64 last_committed = 9;
+	int64 sequence_number = 10;
+
+	// Database and  statement filed is for QUERY/DDL operation
+	string database = 11;
+	string statement = 12;
+
+	// Table and rows field is for INSERT/UPDATE/DELETE operation
+	TableDef table = 13;
+	// Rows field is for INSERT/UPDATE/DELETE operation
+	repeated Row rows = 14;
+
+	// Progress field is for COMMIT/DDL operation,represents the gtid_set or file&pos
+	Progress progress = 15;
+}
+

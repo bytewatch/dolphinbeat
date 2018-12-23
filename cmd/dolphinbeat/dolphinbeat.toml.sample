@@ -1,0 +1,81 @@
+# MySQL address, user and password
+# user must have replication privilege in MySQL.
+mysql_addr = "172.17.0.2:3306"
+mysql_user = "root"
+mysql_password = ""
+mysql_charset = "utf8"
+
+
+# mysql or mariadb
+flavor = "mysql"
+
+gtid_enabled = true
+
+# pseudo server id like a slave 
+server_id = 1001
+
+# mysqldump execution path
+# if not set or empty, ignore mysqldump.
+mysqldump = "mysqldump"
+
+# if we have no privilege to use mysqldump with --master-data,
+# we must skip it.
+skip_master_data = false
+
+
+[log]
+  dir = "../logs"
+  level = "info"
+
+[http_server]
+  addr = ":8080"
+
+[election]
+  enabled = false
+  zk_hosts = "172.17.0.2:2181"
+  zk_path = "/dolphinbeat/nodes"
+  # The lease of leader, in seconds
+  lease = 40
+
+[checkpoint]
+  interval = 10
+  storage = "file"
+  dir = "../etc"
+  #storage = "zookeeper"
+  #zk_hosts = "172.17.0.2:2181"
+  #zk_path = "/dolphinbeat/ckp"
+
+[schema_tracker]
+  storage = "boltdb"
+  dir = "../etc"
+  #storage = "mysql"
+  #addr="172.17.0.3:3306"
+  #user="root"
+  #password=""
+  #database="test"
+
+
+[[sink]]
+  enabled=true
+  type="stdout"
+  name="test_stdout"
+  include_table=["test\\..*"]
+  exclude_table=[]
+  [sink.cfg]
+    encoder="json"
+
+[[sink]]
+  enabled=true
+  type="kafka"
+  name="test_kafka"
+  include_table=["test\\..*"]
+  exclude_table=[]
+  [sink.cfg]
+    broker_list="172.17.0.2:9092"
+    topic="my_topic"
+    partition=0
+    # compression method, none, zlib or gzip, default: none
+    compression="zlib"
+    # When binlog event size is large than max_payload_size, will make fragments before write to kafka
+    max_payload_size=1048576
+
