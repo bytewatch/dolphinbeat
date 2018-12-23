@@ -1,7 +1,7 @@
 # About dolphinbeat
-This is an application that pulls MySQL binlog, parses binlog and sends to different sinks.
+This is an application that pulls MySQL binlog, parses binlog and pushs incremental update data into different sinks.
 
-The types of sink current supported officially are [Kafka](#Kafka) and [Stdout](#Stdout).
+The types of sink supported currently and officially are [Kafka](#Kafka) and [Stdout](#Stdout).
 
 `Dolphinbeat` has following features:
 * Supports MySQL and MariaDB.

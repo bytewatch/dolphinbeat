@@ -77,7 +77,7 @@ func (o *Application) Version() string {
 
 func (o *Application) Usage() string {
 	return `DolphinBeat.
-	This is a program that pretends to be a MySQL slave, parses binlog from master, and pushs incremental update data into different sinks.
+	This is an application that pulls MySQL binlog, parses binlog and pushs incremental update data into different sinks.
 	Supported sinks are: stdout, kafka...
 
 Usage:
