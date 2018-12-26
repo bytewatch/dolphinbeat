@@ -329,7 +329,7 @@ func (o *KafkaSink) run(ctx context.Context) {
 
 		case producerMsg := <-o.producer.Successes():
 			metadata := producerMsg.Metadata.(*msgMetadata)
-			o.l.Infof("acked kafka msg, seq: %d, offset: %d", metadata.seq, producerMsg.Offset)
+			o.l.Debugf("acked kafka msg, seq: %d, offset: %d", metadata.seq, producerMsg.Offset)
 			if metadata.seq != o.ackedSeq+1 {
 				o.l.Panicf("acked seq is not unexcepted: %d, excepted: %d", metadata.seq, o.ackedSeq+1)
 			}
@@ -448,7 +448,6 @@ func (o *KafkaSink) doProduce(payload []byte, p *prog.Progress) error {
 		producerMsg.Metadata = msgMetadatas[i]
 		select {
 		case o.producer.Input() <- producerMsg:
-			o.l.Infof("sent")
 		}
 	}
 

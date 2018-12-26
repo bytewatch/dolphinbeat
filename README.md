@@ -11,7 +11,7 @@ The types of sink supported currently and officially are [Kafka](#Kafka) and [St
 * Supports breakpoint resume: `dolphinbeat` has persistent metadata, it can resume to work after crash recover.
 * Supports standalone and election mode: if election enabled, `dolphinbeat` follower will take over dead leader.
 * Supports filter rules base on database and table for each sink.
-* Supports http API to inspect `dolphinbeat`.
+* Supports HTTP API to inspect `dolphinbeat`.
 * Supports metrics in Prometheus style.
 
 > The types of sink are scalable, you can implement your own sink if need, but I recommend you to use Kafka sink and let business consumes data from Kafka.

@@ -124,13 +124,15 @@ func (o *Application) handleSchema(w http.ResponseWriter, req *http.Request) {
 func (o *Application) handleFailedDDL(w http.ResponseWriter, req *http.Request) {
 	o.Lock()
 	defer o.Unlock()
-	res := &FailedDDLRes{
-		Db:        o.failedDb,
-		Statement: o.failedDDL,
-		Reason:    o.failedReason,
-		Tips:      "You can try 'curl .../ddl/exec  --data-urlencode \"statement=...\"' to fix, and then 'curl .../ddl/retry' to tell me to retry",
+	if o.failedDDL != "" {
+		res := &FailedDDLRes{
+			Db:        o.failedDb,
+			Statement: o.failedDDL,
+			Reason:    o.failedReason,
+			Tips:      "You can try 'curl .../ddl/exec  --data-urlencode 'statement=...' ' to fix, and then 'curl .../ddl/retry' to tell me to retry",
+		}
+		writeData(w, res)
 	}
-	writeData(w, res)
 }
 
 func (o *Application) handleRetryDDL(w http.ResponseWriter, req *http.Request) {
@@ -156,7 +158,9 @@ func (o *Application) handleExecDDL(w http.ResponseWriter, req *http.Request) {
 	err := o.canal.ExecDDL("", statement)
 	if err != nil {
 		writeError(w, err)
+		log.Errorf("execute sql error: %s", err)
 		return
 	}
+	log.Info("execute sql succeed")
 	writeData(w, nil)
 }
