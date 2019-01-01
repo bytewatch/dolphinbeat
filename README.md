@@ -1,9 +1,13 @@
-# About dolphinbeat
+
+# DolphinBeat [![Build Status](https://travis-ci.org/bytewatch/dolphinbeat.svg?branch=master)](https://travis-ci.org/bytewatch/dolphinbeat) 
+
+![](https://img.shields.io/github/license/bytewatch/dolphinbeat.svg)
+
 This is an application that pulls MySQL binlog, parses binlog and pushs incremental update data into different sinks.
 
 The types of sink supported currently and officially are [Kafka](#Kafka) and [Stdout](#Stdout).
 
-`Dolphinbeat` has following features:
+Features:
 * Supports MySQL and MariaDB.
 * Supports GTID and not GTID.
 * Supports MySQL failover: if using GTID, `dolphinbeat` can work smoothly even if MySQL failover.
@@ -51,6 +55,10 @@ Type following commands and you will get builded binary distribution at build/do
 go get github.com/bytewatch/dolphinbeat
 make 
 ```
+# Documents
+* [Configuration](https://github.com/bytewatch/dolphinbeat/wiki/Configuration)
+* [HTTP API](github.com/bytewatch/dolphinbeat/wiki/HTTP-API)
+
 # Sink
 ## Kafka
 This is a sink used for production. `Dolphinbeat` write data encoded with Protobuf into Kafka and business consumes data from Kafka. 
