@@ -42,7 +42,8 @@ If you want to have a deep test, type following commands and you will get a shel
 docker run -e MYSQL_ADDR='8.8.8.8:3306' -e MYSQL_USER='root' -e MYSQL_PASSWORD='xxx' sh
 ``` 
 In this shell, you can modify configurations in /data directory, and then start `dolphinbeat` manually. 
-Config description is presented in [toml.sample](cmd/dolphinbeat/dolphinbeat.toml.sample).
+
+Configuration description is presented in [Wiki](https://github.com/bytewatch/dolphinbeat/wiki/Configuration).
 
 # Compile from source
 Type following commands and you will get builded binary distribution at build/dolphinbeat directory:

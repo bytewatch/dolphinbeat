@@ -24,6 +24,10 @@ var (
 	gPath = "./checkpoint.json"
 )
 
+func makeMockData() []byte {
+	return []byte("testdata")
+}
+
 func TestLoadEmptyData(t *testing.T) {
 	os.Remove(gPath + ".0")
 	os.Remove(gPath + ".1")
@@ -43,11 +47,12 @@ func TestSaveData(t *testing.T) {
 	storage, err := NewFileStorage(gPath)
 	require.Nil(t, err)
 
-	data := makeData()
+	data := makeMockData()
 	err = storage.Save(data)
 	require.Nil(t, err)
 
 	actualData, err := storage.Load()
+	require.Nil(t, err)
 	require.Equal(t, data, actualData)
 
 }

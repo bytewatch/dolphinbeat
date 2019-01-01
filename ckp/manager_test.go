@@ -15,9 +15,16 @@
 package ckp
 
 import (
+	"github.com/bytewatch/dolphinbeat/canal/prog"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
+
+func makeMockProgress(name string, pos uint32) prog.Progress {
+	return prog.Progress{
+		Pos: prog.Position{Name: name, Pos: pos},
+	}
+}
 
 func TestGetMinProgress(t *testing.T) {
 	cfg := NewDefaultConfig()
@@ -25,8 +32,11 @@ func TestGetMinProgress(t *testing.T) {
 	manager, err := NewCkpManager(cfg)
 	require.Nil(t, err)
 
-	manager.RegisterCheckpointer("kafka", nil)
-	require.Equal(t, makeProgress("mysql-bin.000002", 99), manager.GetMinProgress())
+	ckper1 := NewMockCheckpointer(makeMockProgress("mysql-bin.000002", 99))
+	ckper2 := NewMockCheckpointer(makeMockProgress("mysql-bin.000002", 199))
+	manager.RegisterCheckpointer("kafka1", ckper1)
+	manager.RegisterCheckpointer("kafka2", ckper2)
+	require.Equal(t, makeMockProgress("mysql-bin.000002", 99), manager.GetMinProgress())
 }
 
 func TestGetCheckpoint(t *testing.T) {
@@ -35,6 +45,7 @@ func TestGetCheckpoint(t *testing.T) {
 	manager, err := NewCkpManager(cfg)
 	require.Nil(t, err)
 
-	manager.RegisterCheckpointer("kafka", nil)
-	require.Equal(t, makeKafkaCkp(), manager.GetCheckpoint("kafka"))
+	ckper := NewMockCheckpointer(makeMockProgress("mysql-bin.000002", 99))
+	manager.RegisterCheckpointer("kafka", ckper)
+	require.Equal(t, ckper.Checkpoint(), manager.GetCheckpoint("kafka"))
 }

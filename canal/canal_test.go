@@ -29,9 +29,12 @@ import (
 	. "github.com/pingcap/check"
 	"github.com/siddontang/go-log/log"
 	"github.com/siddontang/go-mysql/mysql"
+	"github.com/siddontang/go-mysql/replication"
 )
 
-var testHost = flag.String("host", "127.0.0.1", "MySQL host")
+var testAddr = flag.String("addr", "127.0.0.1:3306", "MySQL address")
+var testUser = flag.String("user", "root", "MySQL user")
+var testPassword = flag.String("password", "", "MySQL password")
 
 func Test(t *testing.T) {
 	TestingT(t)
@@ -45,8 +48,9 @@ var _ = Suite(&canalTestSuite{})
 
 func (s *canalTestSuite) SetUpSuite(c *C) {
 	cfg := NewDefaultConfig()
-	cfg.Addr = fmt.Sprintf("%s:3306", *testHost)
-	cfg.User = "root"
+	cfg.Addr = *testAddr
+	cfg.User = *testUser
+	cfg.Password = *testPassword
 	cfg.HeartbeatPeriod = 200 * time.Millisecond
 	cfg.ReadTimeout = 300 * time.Millisecond
 	cfg.Dump.ExecutionPath = "mysqldump"
@@ -79,13 +83,8 @@ func (s *canalTestSuite) SetUpSuite(c *C) {
 	s.execute(c, "DELETE FROM test.canal_test")
 	s.execute(c, "INSERT INTO test.canal_test (content, name) VALUES (?, ?), (?, ?), (?, ?)", "1", "a", `\0\ndsfasdf`, "b", "", "c")
 
-	s.execute(c, "SET GLOBAL binlog_format = 'ROW'")
-
 	s.c.SetEventHandler(&testEventHandler{c: c})
-	go func() {
-		err = s.c.Run()
-		c.Assert(err, IsNil)
-	}()
+	go s.c.run()
 }
 
 func (s *canalTestSuite) TearDownSuite(c *C) {
@@ -111,12 +110,12 @@ type testEventHandler struct {
 	c *C
 }
 
-func (h *testEventHandler) OnRow(e *RowsEvent) error {
+func (o *testEventHandler) OnRow(h *replication.EventHeader, e *RowsEvent) error {
 	log.Infof("OnRow %s %v\n", e.Action, e.Rows)
 	return nil
 }
 
-func (h *testEventHandler) String() string {
+func (o *testEventHandler) String() string {
 	return "testEventHandler"
 }
 
@@ -135,19 +134,19 @@ func (s *canalTestSuite) TestCanal(c *C) {
 
 func (s *canalTestSuite) TestCanalFilter(c *C) {
 	// included
-	sch, err := s.c.GetTable("test", "canal_test")
+	sch, err := s.c.GetTableDef("test", "canal_test")
 	c.Assert(err, IsNil)
 	c.Assert(sch, NotNil)
-	_, err = s.c.GetTable("not_exist_db", "canal_test")
+	_, err = s.c.GetTableDef("not_exist_db", "canal_test")
 	c.Assert(errors.Trace(err), Not(Equals), ErrExcludedTable)
 	// excluded
-	sch, err = s.c.GetTable("test", "canal_test_inner")
+	sch, err = s.c.GetTableDef("test", "canal_test_inner")
 	c.Assert(errors.Cause(err), Equals, ErrExcludedTable)
 	c.Assert(sch, IsNil)
-	sch, err = s.c.GetTable("mysql", "canal_test")
+	sch, err = s.c.GetTableDef("mysql", "canal_test")
 	c.Assert(errors.Cause(err), Equals, ErrExcludedTable)
 	c.Assert(sch, IsNil)
-	sch, err = s.c.GetTable("not_exist_db", "not_canal_test")
+	sch, err = s.c.GetTableDef("not_exist_db", "not_canal_test")
 	c.Assert(errors.Cause(err), Equals, ErrExcludedTable)
 	c.Assert(sch, IsNil)
 }

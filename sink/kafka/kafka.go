@@ -69,7 +69,7 @@ type KafkaSink struct {
 
 	// Compression type
 	compression protocol.Compression
-	compresser  *zlib.Writer
+	compressor  *zlib.Writer
 
 	errCh  chan error
 	cancel context.CancelFunc
@@ -115,7 +115,7 @@ func newKafkaSink(name string, cfg *Config, l sink.Logger) (*KafkaSink, error) {
 
 	if cfg.Compression == Compression_ZLIB {
 		sink.compression = protocol.Compression_ZLIB
-		sink.compresser = zlib.NewWriter(ioutil.Discard)
+		sink.compressor = zlib.NewWriter(ioutil.Discard)
 	}
 
 	go sink.run(ctx)
@@ -268,8 +268,8 @@ func (o *KafkaSink) Close() error {
 
 	o.producer.Close()
 
-	if o.compresser != nil {
-		o.compresser.Close()
+	if o.compressor != nil {
+		o.compressor.Close()
 	}
 
 	return nil
@@ -278,10 +278,10 @@ func (o *KafkaSink) Close() error {
 func (o *KafkaSink) run(ctx context.Context) {
 	defer close(o.errCh)
 
+	var needProduce bool
 	var ops []*protocol.Operation
 	rowCount := 0
 	continuousEmptyTrxCount := 0
-	needProduce := false
 
 	for {
 		needProduce = false
@@ -363,7 +363,7 @@ func (o *KafkaSink) produce(ops []*protocol.Operation, p *prog.Progress) error {
 		}
 
 		if len(payload) > o.maxPayloadSize {
-			o.l.Infof("ops's size is too large, need to devide into two small ops")
+			o.l.Infof("ops's size is too large, need to divide into two small ops")
 			len := len(poped)
 			if len != 1 {
 				stack.Push(poped[len/2:])
@@ -468,13 +468,13 @@ func (o *KafkaSink) marshalOps(ops []*protocol.Operation) ([]byte, error) {
 	// Compress data
 	if o.compression == protocol.Compression_ZLIB {
 		var wb bytes.Buffer
-		o.compresser.Reset(&wb)
-		_, err = o.compresser.Write(data)
+		o.compressor.Reset(&wb)
+		_, err = o.compressor.Write(data)
 		if err != nil {
 			o.l.Errorf("compress data error: %s", err)
 			return nil, err
 		}
-		err = o.compresser.Close()
+		err = o.compressor.Close()
 		if err != nil {
 			o.l.Errorf("compress data error: %s", err)
 			return nil, err

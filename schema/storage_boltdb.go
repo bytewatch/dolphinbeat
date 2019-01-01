@@ -264,13 +264,13 @@ func (o *BoltdbStorage) purge(tx *bolt.Tx) error {
 	}
 
 	c := bucket.Cursor()
-	k, v := c.Seek(key)
+	k, _ := c.Seek(key)
 	if k == nil {
 		return errors.Errorf("the k-v of key: %d is missing", key)
 	}
 
 	for {
-		k, v = c.Prev()
+		k, v := c.Prev()
 		if k == nil {
 			break
 		}

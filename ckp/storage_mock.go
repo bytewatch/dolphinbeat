@@ -15,44 +15,12 @@
 package ckp
 
 import (
-	"encoding/json"
-	"github.com/bytewatch/dolphinbeat/canal/prog"
-	"time"
+	"sync"
 )
 
-func makeProgress(name string, pos uint32) prog.Progress {
-	return prog.Progress{
-		Pos: prog.Position{Name: name, Pos: pos},
-	}
-}
-
-func makeKafkaCkp() *Checkpoint {
-	ckp := NewCheckpoint().SetProgress(makeProgress("mysql-bin.000002", 99))
-	ckp.SetStringCtx("topic", "topic_test").SetIntCtx("partition", 0).SetIntCtx("offset", 102333)
-	return ckp
-}
-
-func makeEsCkp() *Checkpoint {
-	ckp := NewCheckpoint().SetProgress(makeProgress("mysql-bin.000002", 100))
-	return ckp
-}
-
-func makeData() []byte {
-	data := &Data{
-		Time: time.Now().Truncate(0),
-		Ckps: map[string]*Checkpoint{
-			"kafka": makeKafkaCkp(),
-			"es":    makeEsCkp(),
-		},
-	}
-	buf, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	return buf
-}
-
 type MockStorage struct {
+	data []byte
+	sync.Mutex
 }
 
 func NewMockStorage() *MockStorage {
@@ -60,11 +28,16 @@ func NewMockStorage() *MockStorage {
 }
 
 func (o *MockStorage) Save(data []byte) error {
+	o.Lock()
+	defer o.Unlock()
+	o.data = data
 	return nil
 }
 
 func (o *MockStorage) Load() ([]byte, error) {
-	return makeData(), nil
+	o.Lock()
+	defer o.Unlock()
+	return o.data, nil
 }
 func (o *MockStorage) Close() error {
 	return nil

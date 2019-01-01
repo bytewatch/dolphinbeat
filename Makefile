@@ -12,5 +12,10 @@ dolphinbeat:
 	cd cmd/dolphinbeat/ && $(GOBUILD) -ldflags '$(LDFLAGS)'  -o ../../build/dolphinbeat/bin/dolphinbeat
 	cp -r cmd/dolphinbeat/dolphinbeat.toml.* build/dolphinbeat/etc/
 
+test:
+	cd canal && go test -v
+	cd dump && go test -v
+	cd ckp && go test -v
+
 kafka-consumer:
 	cd cmd/tools/kafka-consumer && $(GOBUILD) -ldflags '$(LDFLAGS)'  -o ../../../build/dolphinbeat/bin/kafka-consumer

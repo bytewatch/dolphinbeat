@@ -38,7 +38,7 @@ type CkpManager struct {
 	reg  map[string]Checkpointer
 
 	// All Checkpointer(sink)'s progress are more advanced than alignedProgress at least.
-	// alignedProgress is uesed when can not retrive min progress by comparision.
+	// alignedProgress is uesed when can not retrive min progress by comparison.
 	alignedProgress *Progress
 
 	storage CkpStorage

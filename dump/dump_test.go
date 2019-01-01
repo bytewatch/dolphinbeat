@@ -33,8 +33,9 @@ import (
 )
 
 // use docker mysql for test
-var host = flag.String("host", "127.0.0.1", "MySQL host")
-var port = flag.Int("port", 3306, "MySQL host")
+var testAddr = flag.String("addr", "127.0.0.1:3306", "MySQL address")
+var testUser = flag.String("user", "root", "MySQL user")
+var testPassword = flag.String("password", "", "MySQL password")
 
 var execution = flag.String("exec", "mysqldump", "mysqldump execution path")
 
@@ -51,10 +52,10 @@ var _ = Suite(&schemaTestSuite{})
 
 func (s *schemaTestSuite) SetUpSuite(c *C) {
 	var err error
-	s.conn, err = client.Connect(fmt.Sprintf("%s:%d", *host, *port), "root", "", "")
+	s.conn, err = client.Connect(fmt.Sprintf("%s", *testAddr), *testUser, *testPassword, "")
 	c.Assert(err, IsNil)
 
-	s.d, err = NewDumper(*execution, fmt.Sprintf("%s:%d", *host, *port), "root", "")
+	s.d, err = NewDumper(*execution, fmt.Sprintf("%s", *testAddr), *testUser, *testPassword)
 	c.Assert(err, IsNil)
 	c.Assert(s.d, NotNil)
 
@@ -138,6 +139,10 @@ func (h *testParseHandler) BinLog(name string, pos uint64) error {
 	return nil
 }
 
+func (h *testParseHandler) Gtid(gtid string) error {
+	return nil
+}
+
 func (h *testParseHandler) DDL(schema string, statement string) error {
 	return nil
 }
@@ -202,7 +207,7 @@ func (s *schemaTestSuite) TestParse(c *C) {
 	err := s.d.Dump(&buf)
 	c.Assert(err, IsNil)
 
-	err = Parse(&buf, new(testParseHandler), true)
+	err = Parse(&buf, new(testParseHandler), true, false)
 	c.Assert(err, IsNil)
 }
 

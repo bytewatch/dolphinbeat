@@ -60,7 +60,7 @@ type OperationDecoder struct {
 	curGroup  groupInfo
 	fragments [][]byte
 
-	// If we have received all fragments of cur group, we need to dispath
+	// If we have received all fragments of cur group, we need to dispatch
 	needDispatch bool
 
 	logger Logger

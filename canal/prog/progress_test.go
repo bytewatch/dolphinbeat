@@ -135,6 +135,7 @@ func TestCopy(t *testing.T) {
 	require.Equal(t, p1, p2)
 
 	gset, err = mysql.ParseMysqlGTIDSet("cb477437-aacb-11e8-90e7-0242ac110002:1-11")
+	require.Nil(t, err)
 	p1.UpdateGTIDSet(gset)
 	require.NotEqual(t, p1, p2)
 

@@ -72,7 +72,7 @@ func (c *Canal) runSyncBinlog() error {
 		return err
 	}
 
-	savePos := false
+	var savePos bool
 	progress := c.master.Progress()
 	pos := progress.Position()
 
@@ -156,7 +156,7 @@ func (c *Canal) runSyncBinlog() error {
 				if err = c.eventHandler.OnBegin(ev.Header); err != nil {
 					return errors.Trace(err)
 				}
-				continue
+				break
 			}
 			if strings.Compare(strings.ToUpper(hack.String(e.Query)), "COMMIT") == 0 {
 				progress.Update(pos)
@@ -167,7 +167,7 @@ func (c *Canal) runSyncBinlog() error {
 				if err = c.eventHandler.OnCommit(ev.Header, progress); err != nil {
 					return errors.Trace(err)
 				}
-				continue
+				break
 			}
 
 			trimed := TrimStatement(hack.String(e.Query))
@@ -178,7 +178,7 @@ func (c *Canal) runSyncBinlog() error {
 				if err = c.eventHandler.OnQuery(ev.Header, e); err != nil {
 					return errors.Trace(err)
 				}
-				continue
+				break
 			}
 
 			progress.Update(pos)

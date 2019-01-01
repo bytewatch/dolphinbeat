@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/bytewatch/dolphinbeat/schema"
 	"github.com/juju/errors"
 	"github.com/siddontang/go-mysql/mysql"
 )
@@ -149,6 +150,7 @@ func NewDefaultConfig() *Config {
 	c.Dump.ExecutionPath = "mysqldump"
 	c.Dump.DiscardErr = true
 
+	c.Tracker.Storage = schema.StorageType_Boltdb
 	c.Tracker.Dir = "."
 
 	return c

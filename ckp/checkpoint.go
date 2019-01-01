@@ -130,3 +130,21 @@ func (o *Checkpoint) GetStringCtx(key string, defValue string) string {
 	}
 	return str
 }
+
+type MockCheckpointer struct {
+	p prog.Progress
+}
+
+func (o *MockCheckpointer) makeMockCkp() *Checkpoint {
+	ckp := NewCheckpoint().SetProgress(o.p)
+	ckp.SetStringCtx("topic", "topic_test").SetIntCtx("partition", 0).SetIntCtx("offset", 102333)
+	return ckp
+}
+
+func NewMockCheckpointer(p prog.Progress) *MockCheckpointer {
+	return &MockCheckpointer{p: p}
+}
+
+func (o *MockCheckpointer) Checkpoint() *Checkpoint {
+	return o.makeMockCkp()
+}

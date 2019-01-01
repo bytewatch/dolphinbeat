@@ -145,7 +145,7 @@ func Parse(r io.Reader, h ParseHandler, parseBinlogPos bool, parseGtidSet bool) 
 }
 
 func parseValues(str string) ([]string, error) {
-	// values are seperated by comma, but we can not split using comma directly
+	// values are separated by comma, but we can not split using comma directly
 	// string is enclosed by single quote
 
 	// a simple implementation, may be more robust later.
