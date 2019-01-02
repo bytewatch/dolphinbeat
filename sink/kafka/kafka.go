@@ -71,6 +71,8 @@ type KafkaSink struct {
 	compression protocol.Compression
 	compressor  *zlib.Writer
 
+	wg sync.WaitGroup
+
 	errCh  chan error
 	cancel context.CancelFunc
 
@@ -277,11 +279,17 @@ func (o *KafkaSink) Close() error {
 
 func (o *KafkaSink) run(ctx context.Context) {
 	defer close(o.errCh)
+	defer o.wg.Wait()
 
 	var needProduce bool
 	var ops []*protocol.Operation
 	rowCount := 0
 	continuousEmptyTrxCount := 0
+
+	o.wg.Add(1)
+	go o.receiveSuccesses(ctx)
+	o.wg.Add(1)
+	go o.receiveErrors(ctx)
 
 	for {
 		needProduce = false
@@ -327,6 +335,18 @@ func (o *KafkaSink) run(ctx context.Context) {
 				continuousEmptyTrxCount = 0
 			}
 
+		case <-ctx.Done():
+			o.l.Warnf("context canceled")
+			return
+		}
+	}
+}
+
+func (o *KafkaSink) receiveSuccesses(ctx context.Context) {
+	defer o.wg.Done()
+	for {
+		select {
+
 		case producerMsg := <-o.producer.Successes():
 			metadata := producerMsg.Metadata.(*msgMetadata)
 			o.l.Debugf("acked kafka msg, seq: %d, offset: %d", metadata.seq, producerMsg.Offset)
@@ -340,6 +360,18 @@ func (o *KafkaSink) run(ctx context.Context) {
 				o.ackedProgress = *metadata.p
 			}
 			o.Unlock()
+
+		case <-ctx.Done():
+			o.l.Warnf("context canceled")
+			return
+		}
+	}
+}
+
+func (o *KafkaSink) receiveErrors(ctx context.Context) {
+	defer o.wg.Done()
+	for {
+		select {
 
 		case producerErr := <-o.producer.Errors():
 			o.l.Errorf("reported kafka error: %s", producerErr.Err)

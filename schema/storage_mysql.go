@@ -32,7 +32,7 @@ var (
 		snapshot LONGBLOB NOT NULL COMMENT 'snapshot of schema', 
 		statement LONGBLOB NOT NULL COMMENT 'ddl statement', 
 		type ENUM('snapshot','statement') NOT NULL DEFAULT 'snapshot' COMMENT 'snapshot or statement', 
-		time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time of this record',
+		create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time of this record',
 		PRIMARY KEY(id)
 	)`, tableName)
 )
