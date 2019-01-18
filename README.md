@@ -3,7 +3,9 @@
 
 ![](https://img.shields.io/github/license/bytewatch/dolphinbeat.svg)
 
-This is an application that pulls MySQL binlog, parses binlog and pushs incremental update data into different sinks.
+> Other languages: [中文](./README.zh-cn.md)
+
+This is a high available server that pulls MySQL binlog, parses binlog and pushs incremental update data into different sinks.
 
 The types of sink supported currently and officially are [Kafka](#Kafka) and [Stdout](#Stdout).
 
@@ -72,7 +74,7 @@ Kafka sink has following features:
 * Exactly-once delivery: client library can dedup duplicated message with same sequence number which may caused by producer retry or Kafka failover.
 * Unlimited event size: `dolphinbeat` use fragments algorithm like IPV4 if the binlog event is bigger than Kafka's max message size.
 
-A small example is presented in [kafka-consumer](cmd/tools/kafka-consumer).
+A small example using client library is presented in [kafka-consumer](cmd/tools/kafka-consumer).
 
 `kafka-consumer` is a command tool to  decode data in Kafka message and print out with JSON.
 
