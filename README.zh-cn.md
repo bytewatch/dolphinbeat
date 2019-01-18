@@ -60,7 +60,7 @@ make
 
 # 文档
 * [Configuration](https://github.com/bytewatch/dolphinbeat/wiki/Configuration)
-* [HTTP API](github.com/bytewatch/dolphinbeat/wiki/HTTP-API)
+* [HTTP API](https://github.com/bytewatch/dolphinbeat/wiki/HTTP-API)
 
  
 

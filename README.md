@@ -59,7 +59,7 @@ make
 ```
 # Documents
 * [Configuration](https://github.com/bytewatch/dolphinbeat/wiki/Configuration)
-* [HTTP API](github.com/bytewatch/dolphinbeat/wiki/HTTP-API)
+* [HTTP API](https://github.com/bytewatch/dolphinbeat/wiki/HTTP-API)
 
 # Sink
 ## Kafka
