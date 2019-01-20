@@ -363,10 +363,10 @@
 			"revisionTime": "2019-01-20T03:43:59Z"
 		},
 		{
-			"checksumSHA1": "GehuGz8iM2LFSMzQwAqTn1SQLOw=",
+			"checksumSHA1": "U37/3QPEfvXh07bYDkNYSwl7YUE=",
 			"path": "github.com/siddontang/go-mysql/mysql",
-			"revision": "adcdf75ddcbd70e62d789a5d77a139822fba9688",
-			"revisionTime": "2018-12-11T01:08:42Z"
+			"revision": "5dd1cf011bd7d552a76f2777cae3db15b530e14f",
+			"revisionTime": "2019-01-20T15:44:29Z"
 		},
 		{
 			"checksumSHA1": "9C1IVaRG4WKVhw1EynKy+pHuglQ=",
