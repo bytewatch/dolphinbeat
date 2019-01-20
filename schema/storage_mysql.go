@@ -17,16 +17,15 @@ package schema
 import (
 	"database/sql"
 	"fmt"
-	"github.com/bytewatch/dolphinbeat/canal/prog"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/siddontang/go-log/log"
+	"github.com/siddontang/go-mysql/mysql"
 )
 
 var (
 	tableName string = "tb_schema_data"
 	initQuery string = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s ( 
 		id INT NOT NULL AUTO_INCREMENT, 
-		server_id INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'server id of mysql master', 
 		name VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'binlog name', 
 		pos INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'binlog pos', 
 		snapshot LONGBLOB NOT NULL COMMENT 'snapshot of schema', 
@@ -37,11 +36,11 @@ var (
 	)`, tableName)
 )
 
-type MysqlStorage struct {
+type mysqlStorage struct {
 	dsn string
 }
 
-func NewMysqlStorage(addr string, user string, password string, database string) (*MysqlStorage, error) {
+func NewMysqlStorage(addr string, user string, password string, database string) (*mysqlStorage, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s", user, password, addr, database)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -55,13 +54,13 @@ func NewMysqlStorage(addr string, user string, password string, database string)
 		return nil, err
 	}
 
-	storage := &MysqlStorage{
+	storage := &mysqlStorage{
 		dsn: dsn,
 	}
 	return storage, nil
 }
 
-func (o *MysqlStorage) SaveSnapshot(data []byte, pos prog.Position) error {
+func (o *mysqlStorage) SaveSnapshot(data []byte, pos mysql.Position) error {
 	var err error
 	db, err := sql.Open("mysql", o.dsn)
 	if err != nil {
@@ -80,9 +79,9 @@ func (o *MysqlStorage) SaveSnapshot(data []byte, pos prog.Position) error {
 	}()
 
 	query := fmt.Sprintf(
-		"INSERT INTO %s SET server_id=?, name=?, pos=?, snapshot=?, statement='', type = ?",
+		"INSERT INTO %s SET name=?, pos=?, snapshot=?, statement='', type = ?",
 		tableName)
-	_, err = tx.Exec(query, pos.ServerID, pos.Name, pos.Pos, data, "snapshot")
+	_, err = tx.Exec(query, pos.Name, pos.Pos, data, "snapshot")
 	if err != nil {
 		log.Errorf("insert into db error: %s", err)
 		return err
@@ -104,8 +103,8 @@ func (o *MysqlStorage) SaveSnapshot(data []byte, pos prog.Position) error {
 	return nil
 }
 
-func (o *MysqlStorage) LoadLastSnapshot() ([]byte, prog.Position, error) {
-	var pos prog.Position
+func (o *mysqlStorage) LoadLastSnapshot() ([]byte, mysql.Position, error) {
+	var pos mysql.Position
 	var data []byte
 
 	db, err := sql.Open("mysql", o.dsn)
@@ -115,10 +114,10 @@ func (o *MysqlStorage) LoadLastSnapshot() ([]byte, prog.Position, error) {
 	defer db.Close()
 
 	query := fmt.Sprintf(
-		"SELECT server_id, name, pos, snapshot FROM %s WHERE type='snapshot' ORDER BY id DESC LIMIT 1 ",
+		"SELECT name, pos, snapshot FROM %s WHERE type='snapshot' ORDER BY id DESC LIMIT 1 ",
 		tableName)
 	row := db.QueryRow(query)
-	err = row.Scan(&pos.ServerID, &pos.Name, &pos.Pos, &data)
+	err = row.Scan(&pos.Name, &pos.Pos, &data)
 	if err != nil && err != sql.ErrNoRows {
 		log.Errorf("query from db error: %s", err)
 		return nil, pos, err
@@ -127,16 +126,12 @@ func (o *MysqlStorage) LoadLastSnapshot() ([]byte, prog.Position, error) {
 	return data, pos, nil
 }
 
-func (o *MysqlStorage) SaveStatement(db string, statement string, pos prog.Position) error {
+func (o *mysqlStorage) SaveStatement(db string, statement string, pos mysql.Position) error {
+	// TODO
 	return nil
 }
 
-func (o *MysqlStorage) LoadNextStatement(prePos prog.Position) (string, string, prog.Position, error) {
-	var pos prog.Position
-	return "", "", pos, nil
-}
-
-func (o *MysqlStorage) Reset() error {
+func (o *mysqlStorage) Reset() error {
 	db, err := sql.Open("mysql", o.dsn)
 	if err != nil {
 		return err
@@ -157,8 +152,12 @@ func (o *MysqlStorage) Reset() error {
 	return nil
 }
 
+func (o *mysqlStorage) StatementIterator() Iterator {
+	return &mysqlStorageIterator{}
+}
+
 // Purge the snapshot or statement before the last snapshot
-func (o *MysqlStorage) purge(tx *sql.Tx) error {
+func (o *mysqlStorage) purge(tx *sql.Tx) error {
 	var err error
 	var lastSnapshotId int
 	query := fmt.Sprintf(
@@ -179,4 +178,26 @@ func (o *MysqlStorage) purge(tx *sql.Tx) error {
 
 	return nil
 
+}
+
+type mysqlStorageIterator struct {
+	nextId int
+	end    bool
+}
+
+func (o *mysqlStorageIterator) First() (string, string, mysql.Position, error) {
+	// TODO
+	var pos mysql.Position
+	return "", "", pos, nil
+}
+
+func (o *mysqlStorageIterator) Next() (string, string, mysql.Position, error) {
+	// TODO
+	var pos mysql.Position
+	return "", "", pos, nil
+}
+
+func (o *mysqlStorageIterator) End() bool {
+	// TODO
+	return o.end
 }

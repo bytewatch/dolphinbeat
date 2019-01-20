@@ -21,7 +21,7 @@ package canal
 
 import (
 	"fmt"
-	"github.com/bytewatch/ddl-executor"
+	"github.com/bytewatch/dolphinbeat/schema"
 )
 
 // The action name for sync.
@@ -33,7 +33,7 @@ const (
 
 // RowsEvent is the event for row replication.
 type RowsEvent struct {
-	Table  *executor.TableDef
+	Table  *schema.TableDef
 	Action string
 	// changed row list
 	// binlog has three update event version, v0, v1 and v2.
@@ -43,7 +43,7 @@ type RowsEvent struct {
 	Rows [][]interface{}
 }
 
-func newRowsEvent(table *executor.TableDef, action string, rows [][]interface{}) *RowsEvent {
+func newRowsEvent(table *schema.TableDef, action string, rows [][]interface{}) *RowsEvent {
 	e := new(RowsEvent)
 
 	e.Table = table

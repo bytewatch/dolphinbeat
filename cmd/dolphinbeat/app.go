@@ -23,7 +23,7 @@ import (
 	"github.com/bytewatch/dolphinbeat/sink"
 	"github.com/bytewatch/dolphinbeat/util"
 	"github.com/bytewatch/election"
-	"github.com/juju/errors"
+	"github.com/pingcap/errors"
 	"github.com/siddontang/go-log/log"
 	"io"
 	"strings"

@@ -19,22 +19,13 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/boltdb/bolt"
-	"github.com/bytewatch/dolphinbeat/canal/prog"
-	"github.com/juju/errors"
-	"strconv"
-	"strings"
+	"github.com/pingcap/errors"
+	"github.com/siddontang/go-mysql/mysql"
 	"time"
 )
 
-// The key of blotdb
-type Key struct {
-	Name uint32
-	Pos  uint32
-}
-
 // The value of blotdb
-type Value struct {
-	ServerID  uint32
+type value struct {
 	Name      string
 	Pos       uint32
 	Snapshot  []byte
@@ -43,36 +34,27 @@ type Value struct {
 	Time      time.Time
 }
 
-type BoltdbStorage struct {
+type boltdbStorage struct {
 	path        string
 	curServerID uint32
 
 	db *bolt.DB
 }
 
-func NewBoltdbStorage(path string) (*BoltdbStorage, error) {
+func NewBoltdbStorage(path string) (*boltdbStorage, error) {
 	db, err := bolt.Open(path, 0600, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	serverID := uint64(0)
-
 	err = db.Update(func(tx *bolt.Tx) error {
-		meta, err := tx.CreateBucketIfNotExists([]byte("meta"))
+		_, err := tx.CreateBucketIfNotExists([]byte("meta"))
 		if err != nil {
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists([]byte("data"))
 		if err != nil {
 			return err
-		}
-		v := meta.Get([]byte("server_id"))
-		if v != nil {
-			serverID, err = strconv.ParseUint(string(v), 10, 64)
-			if err != nil {
-				return err
-			}
 		}
 		return nil
 	})
@@ -81,46 +63,24 @@ func NewBoltdbStorage(path string) (*BoltdbStorage, error) {
 		return nil, err
 	}
 
-	storage := &BoltdbStorage{
-		path:        path,
-		db:          db,
-		curServerID: uint32(serverID),
+	storage := &boltdbStorage{
+		path: path,
+		db:   db,
 	}
 
 	return storage, nil
 }
 
-// Save snapshot data at bucket 'pos.serverID'
-func (o *BoltdbStorage) SaveSnapshot(data []byte, pos prog.Position) error {
+// Save snapshot data
+func (o *boltdbStorage) SaveSnapshot(data []byte, pos mysql.Position) error {
 	err := o.db.Update(func(tx *bolt.Tx) error {
 		var err error
+		bucket := tx.Bucket([]byte("data"))
 
-		serverIDBytes := []byte(strconv.FormatUint(uint64(pos.ServerID), 10))
+		id, _ := bucket.NextSequence()
 
-		if o.curServerID != pos.ServerID {
-			// If we switch to a new server_id, we need to save this server_id into meta
-			meta := tx.Bucket([]byte("meta"))
-			err := meta.Put([]byte("server_id"), serverIDBytes)
-			if err != nil {
-				return err
-			}
-
-			// If we switch to a new server_id, we need to ensure the new bucket is empty
-			bucket := tx.Bucket([]byte("data")).Bucket(serverIDBytes)
-			if bucket != nil {
-				err = tx.Bucket([]byte("data")).DeleteBucket(serverIDBytes)
-				if err != nil {
-					return err
-				}
-			}
-			_, err = tx.Bucket([]byte("data")).CreateBucket(serverIDBytes)
-			if err != nil {
-				return err
-			}
-		}
-
-		// Make a sortable key base on pos
-		key, err := makeKey(pos)
+		// Make a sortable key base on id
+		key, err := makeKey(id)
 		if err != nil {
 			return err
 		}
@@ -130,7 +90,6 @@ func (o *BoltdbStorage) SaveSnapshot(data []byte, pos prog.Position) error {
 		}
 
 		// Save snapshot
-		bucket := tx.Bucket([]byte("data")).Bucket(serverIDBytes)
 		err = bucket.Put(key, value)
 		if err != nil {
 			return err
@@ -141,10 +100,6 @@ func (o *BoltdbStorage) SaveSnapshot(data []byte, pos prog.Position) error {
 		err = meta.Put([]byte("last_snapshot"), key)
 		if err != nil {
 			return err
-		}
-
-		if o.curServerID != pos.ServerID {
-			o.curServerID = pos.ServerID
 		}
 
 		// Purge the expired data
@@ -158,26 +113,22 @@ func (o *BoltdbStorage) SaveSnapshot(data []byte, pos prog.Position) error {
 	return nil
 }
 
-func (o *BoltdbStorage) LoadLastSnapshot() ([]byte, prog.Position, error) {
-	var pos prog.Position
-	var value Value
+func (o *boltdbStorage) LoadLastSnapshot() ([]byte, mysql.Position, error) {
+	var pos mysql.Position
+	var value value
 	var data []byte
 
 	err := o.db.View(func(tx *bolt.Tx) error {
-		if o.curServerID == 0 {
+		meta := tx.Bucket([]byte("meta"))
+		key := meta.Get([]byte("last_snapshot"))
+
+		if key == nil {
 			// Maybe this is in initial startup
 			return nil
 		}
 
-		meta := tx.Bucket([]byte("meta"))
-		key := meta.Get([]byte("last_snapshot"))
+		bucket := tx.Bucket([]byte("data"))
 
-		serverIDBytes := []byte(strconv.FormatUint(uint64(o.curServerID), 10))
-
-		bucket := tx.Bucket([]byte("data")).Bucket(serverIDBytes)
-		if bucket == nil {
-			return errors.Errorf("the bucket of server_id: %d is missing", o.curServerID)
-		}
 		valueBytes := bucket.Get([]byte(key))
 		err := json.Unmarshal(valueBytes, &value)
 		if err != nil {
@@ -190,7 +141,6 @@ func (o *BoltdbStorage) LoadLastSnapshot() ([]byte, prog.Position, error) {
 		return nil, pos, err
 	}
 
-	pos.ServerID = value.ServerID
 	pos.Name = value.Name
 	pos.Pos = value.Pos
 	data = value.Snapshot
@@ -198,16 +148,12 @@ func (o *BoltdbStorage) LoadLastSnapshot() ([]byte, prog.Position, error) {
 	return data, pos, nil
 }
 
-func (o *BoltdbStorage) SaveStatement(db string, statement string, pos prog.Position) error {
+func (o *boltdbStorage) SaveStatement(db string, statement string, pos mysql.Position) error {
+	// TODO
 	return nil
 }
 
-func (o *BoltdbStorage) LoadNextStatement(prePos prog.Position) (string, string, prog.Position, error) {
-	var pos prog.Position
-	return "", "", pos, nil
-}
-
-func (o *BoltdbStorage) Reset() error {
+func (o *boltdbStorage) Reset() error {
 	err := o.db.Update(func(tx *bolt.Tx) error {
 		// Delete meta bucket if exists
 		if tx.Bucket([]byte("meta")) != nil {
@@ -247,18 +193,20 @@ func (o *BoltdbStorage) Reset() error {
 	return nil
 }
 
-// Purge the snapshot or statement before the last snapshot
-func (o *BoltdbStorage) purge(tx *bolt.Tx) error {
-	if o.curServerID == 0 {
-		// Maybe this is in initial startup
-		return nil
-	}
+func (o *boltdbStorage) StatementIterator() Iterator {
+	return &boltdbStorageIterator{}
+}
 
+// Purge the snapshot or statement before the last snapshot
+func (o *boltdbStorage) purge(tx *bolt.Tx) error {
 	meta := tx.Bucket([]byte("meta"))
 	key := meta.Get([]byte("last_snapshot"))
 
-	serverIDBytes := []byte(strconv.FormatUint(uint64(o.curServerID), 10))
-	bucket := tx.Bucket([]byte("data")).Bucket(serverIDBytes)
+	if key == nil {
+		return nil
+	}
+
+	bucket := tx.Bucket([]byte("data"))
 	if bucket == nil {
 		return errors.Errorf("the bucket of server_id: %d is missing", o.curServerID)
 	}
@@ -275,7 +223,7 @@ func (o *BoltdbStorage) purge(tx *bolt.Tx) error {
 			break
 		}
 
-		var value Value
+		var value value
 		err := json.Unmarshal(v, &value)
 		if err != nil {
 			return err
@@ -289,32 +237,8 @@ func (o *BoltdbStorage) purge(tx *bolt.Tx) error {
 	return nil
 }
 
-// Make a sortable bytes slice, used as key of blotdb key-value
-func makeKey(pos prog.Position) ([]byte, error) {
-	var key Key
-	splited := strings.Split(pos.Name, ".")
-	if len(splited) == 1 {
-		return nil, errors.New("parse binlog name error")
-	}
-	binlog, err := strconv.ParseUint(splited[len(splited)-1], 10, 32)
-	if err != nil {
-		return nil, err
-	}
-
-	key.Name = uint32(binlog)
-	key.Pos = pos.Pos
-
-	keyBytes, err := marshal(key)
-	if err != nil {
-		return nil, err
-	}
-
-	return keyBytes, nil
-}
-
-func makeValue(snapshot []byte, db string, statement string, pos prog.Position) ([]byte, error) {
-	var value Value
-	value.ServerID = pos.ServerID
+func makeValue(snapshot []byte, db string, statement string, pos mysql.Position) ([]byte, error) {
+	var value value
 	value.Name = pos.Name
 	value.Pos = pos.Pos
 	value.Snapshot = snapshot
@@ -329,9 +253,10 @@ func makeValue(snapshot []byte, db string, statement string, pos prog.Position) 
 	return buf, err
 }
 
-func marshal(v interface{}) ([]byte, error) {
+// Make a sortable bytes slice, used as key of blotdb key-value
+func makeKey(id uint64) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, v)
+	err := binary.Write(buf, binary.BigEndian, id)
 	if err != nil {
 		return nil, err
 	}
@@ -345,4 +270,26 @@ func unmarshal(b []byte, v interface{}) error {
 		return err
 	}
 	return nil
+}
+
+type boltdbStorageIterator struct {
+	nextKey []byte
+	end     bool
+}
+
+func (o *boltdbStorageIterator) First() (string, string, mysql.Position, error) {
+	// TODO
+	var pos mysql.Position
+	return "", "", pos, nil
+}
+
+func (o *boltdbStorageIterator) Next() (string, string, mysql.Position, error) {
+	// TODO
+	var pos mysql.Position
+	return "", "", pos, nil
+}
+
+func (o *boltdbStorageIterator) End() bool {
+	// TODO
+	return o.end
 }

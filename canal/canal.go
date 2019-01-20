@@ -30,11 +30,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bytewatch/ddl-executor"
 	"github.com/bytewatch/dolphinbeat/canal/prog"
 	"github.com/bytewatch/dolphinbeat/dump"
 	"github.com/bytewatch/dolphinbeat/schema"
-	"github.com/juju/errors"
+	"github.com/pingcap/errors"
 	"github.com/siddontang/go-log/log"
 	"github.com/siddontang/go-mysql/client"
 	"github.com/siddontang/go-mysql/mysql"
@@ -326,7 +325,7 @@ func (c *Canal) checkTableMatch(key string) bool {
 	return matchFlag
 }
 
-func (c *Canal) GetTableDef(db string, table string) (*executor.TableDef, error) {
+func (c *Canal) GetTableDef(db string, table string) (*schema.TableDef, error) {
 	key := fmt.Sprintf("%s.%s", db, table)
 	// if table is excluded, return error and skip parsing event or dump
 	if !c.checkTableMatch(key) {

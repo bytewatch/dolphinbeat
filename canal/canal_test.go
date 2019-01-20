@@ -25,8 +25,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/juju/errors"
 	. "github.com/pingcap/check"
+	"github.com/pingcap/errors"
 	"github.com/siddontang/go-log/log"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"

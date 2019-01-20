@@ -21,7 +21,7 @@ package canal
 
 import (
 	"github.com/bytewatch/dolphinbeat/canal/prog"
-	"github.com/juju/errors"
+	"github.com/pingcap/errors"
 	"github.com/siddontang/go-log/log"
 	"github.com/siddontang/go-mysql/mysql"
 	"time"
@@ -153,11 +153,6 @@ func (c *Canal) tryDump() error {
 		return nil
 	}
 
-	if c.dumper == nil {
-		log.Info("skip dump, no mysqldump")
-		return nil
-	}
-
 	// Reset schema info
 	err = c.tracker.Reset()
 	if err != nil {
@@ -173,7 +168,8 @@ func (c *Canal) tryDump() error {
 		return errors.New("gtid set not found from backup, the mysqldump's version may be incorrect")
 	}
 	// Tell schema tracker to make a snapshot
-	err = c.tracker.Persist(c.master.Position())
+	pos := c.master.Position()
+	err = c.tracker.Persist(mysql.Position{pos.Name, pos.Pos})
 	if err != nil {
 		return err
 	}

@@ -17,7 +17,7 @@ package stdout
 import (
 	"github.com/bytewatch/dolphinbeat/canal"
 	"github.com/bytewatch/dolphinbeat/canal/prog"
-	"github.com/juju/errors"
+	"github.com/pingcap/errors"
 	"github.com/siddontang/go-mysql/replication"
 )
 

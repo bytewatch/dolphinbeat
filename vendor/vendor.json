@@ -98,12 +98,6 @@
 			"revisionTime": "2018-10-30T15:25:28Z"
 		},
 		{
-			"checksumSHA1": "HpnVP25yXZys8uwdVe25MKMIwn8=",
-			"path": "github.com/juju/errors",
-			"revision": "c7d06af17c68cd34c835053720b21f6549d9b0ee",
-			"revisionTime": "2017-07-03T01:00:42Z"
-		},
-		{
 			"checksumSHA1": "bKMZjd2wPw13VwoE7mBeSv5djFA=",
 			"path": "github.com/matttproud/golang_protobuf_extensions/pbutil",
 			"revision": "c12348ce28de40eed0136aa2b644d0ee0650e56c",
@@ -134,10 +128,10 @@
 			"revisionTime": "2018-10-24T15:10:47Z"
 		},
 		{
-			"checksumSHA1": "xbV0lm0Qw8rFC82Dttxbf5ypBjA=",
+			"checksumSHA1": "yrok+BeDy+fzcUAXQUbXR+7XjLM=",
 			"path": "github.com/pingcap/parser",
-			"revision": "79b42ecfaf7046c07b3ad58db2e0d1c2336408c8",
-			"revisionTime": "2018-12-11T07:24:23Z"
+			"revision": "5958b6fcdb2d33614d9b2ab99f76b5c1c422b39f",
+			"revisionTime": "2019-01-18T12:06:48Z"
 		},
 		{
 			"checksumSHA1": "zrZ2JfaxdfwpArtuyiPjgH9GKeY=",
@@ -363,10 +357,10 @@
 			"revisionTime": "2018-08-07T00:43:14Z"
 		},
 		{
-			"checksumSHA1": "8XLT0aC4U9/OA7Ws9AHWdZ6+ruA=",
+			"checksumSHA1": "ljSBrEs4rE+usLPARhnvlY8OPmo=",
 			"path": "github.com/siddontang/go-mysql/client",
-			"revision": "adcdf75ddcbd70e62d789a5d77a139822fba9688",
-			"revisionTime": "2018-12-11T01:08:42Z"
+			"revision": "3da28fe7128b8d6be80a0be5f5ba18a4e315023c",
+			"revisionTime": "2019-01-20T03:43:59Z"
 		},
 		{
 			"checksumSHA1": "GehuGz8iM2LFSMzQwAqTn1SQLOw=",
@@ -375,16 +369,16 @@
 			"revisionTime": "2018-12-11T01:08:42Z"
 		},
 		{
-			"checksumSHA1": "n/oG8QPPwsvSAimc/gCSuh5GaOQ=",
+			"checksumSHA1": "9C1IVaRG4WKVhw1EynKy+pHuglQ=",
 			"path": "github.com/siddontang/go-mysql/packet",
-			"revision": "adcdf75ddcbd70e62d789a5d77a139822fba9688",
-			"revisionTime": "2018-12-11T01:08:42Z"
+			"revision": "3da28fe7128b8d6be80a0be5f5ba18a4e315023c",
+			"revisionTime": "2019-01-20T03:43:59Z"
 		},
 		{
-			"checksumSHA1": "bk/8WV9dDnI/n43b4LU9U7nEuI4=",
+			"checksumSHA1": "iDc9JN7NDF/YRgXZwb973P3irqM=",
 			"path": "github.com/siddontang/go-mysql/replication",
-			"revision": "adcdf75ddcbd70e62d789a5d77a139822fba9688",
-			"revisionTime": "2018-12-11T01:08:42Z"
+			"revision": "3da28fe7128b8d6be80a0be5f5ba18a4e315023c",
+			"revisionTime": "2019-01-20T03:43:59Z"
 		},
 		{
 			"checksumSHA1": "hou29E6PZ7dEDFgXgM9P15cgHr4=",

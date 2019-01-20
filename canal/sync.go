@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/bytewatch/dolphinbeat/canal/prog"
-	"github.com/juju/errors"
+	"github.com/pingcap/errors"
 	"github.com/satori/go.uuid"
 	"github.com/siddontang/go-log/log"
 	"github.com/siddontang/go-mysql/mysql"
@@ -235,7 +235,7 @@ func (c *Canal) trackDDL(db string, query string, pos prog.Position) error {
 	}
 
 	for {
-		err = c.tracker.ExecAndPersist(db, query, pos)
+		err = c.tracker.ExecAndPersist(db, query, mysql.Position{pos.Name, pos.Pos})
 		if err == nil {
 			return nil
 		}

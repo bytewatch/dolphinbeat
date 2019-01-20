@@ -15,9 +15,9 @@
 package stdout
 
 import (
-	"github.com/bytewatch/ddl-executor"
 	"github.com/bytewatch/dolphinbeat/canal"
 	"github.com/bytewatch/dolphinbeat/canal/prog"
+	"github.com/bytewatch/dolphinbeat/schema"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 	"github.com/siddontang/go/hack"
@@ -43,12 +43,12 @@ type Row struct {
 }
 
 type Column struct {
-	Name      string             `json:"name"`
-	SqlType   string             `json:"sql_type"`
-	InnerType byte               `json:"inner_type"`
-	Unsigned  bool               `json:"unsigned"`
-	Key       executor.IndexType `json:"key"`
-	Charset   string             `json:"charset"`
+	Name      string           `json:"name"`
+	SqlType   string           `json:"sql_type"`
+	InnerType byte             `json:"inner_type"`
+	Unsigned  bool             `json:"unsigned"`
+	Key       schema.IndexType `json:"key"`
+	Charset   string           `json:"charset"`
 }
 
 type Table struct {
@@ -211,7 +211,7 @@ func makeProgress(p prog.Progress) *Progress {
 	return &progress
 }
 
-func makeTableDef(t *executor.TableDef) *Table {
+func makeTableDef(t *schema.TableDef) *Table {
 	var table Table
 	table.Name = t.Name
 	table.Database = t.Database

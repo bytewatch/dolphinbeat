@@ -16,9 +16,9 @@ package kafka
 
 import (
 	"fmt"
-	"github.com/bytewatch/ddl-executor"
 	"github.com/bytewatch/dolphinbeat/canal"
 	"github.com/bytewatch/dolphinbeat/canal/prog"
+	"github.com/bytewatch/dolphinbeat/schema"
 	"github.com/bytewatch/dolphinbeat/sink/kafka/protocol"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -177,7 +177,7 @@ func makeColumns(values []interface{}) []*protocol.Column {
 	return columns
 }
 
-func makeTableDef(t *executor.TableDef) *protocol.TableDef {
+func makeTableDef(t *schema.TableDef) *protocol.TableDef {
 	var table protocol.TableDef
 	table.Name = t.Name
 	table.Database = t.Database
