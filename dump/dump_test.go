@@ -33,7 +33,8 @@ import (
 )
 
 // use docker mysql for test
-var testAddr = flag.String("addr", "127.0.0.1:3306", "MySQL address")
+var testHost = flag.String("host", "127.0.0.1", "MySQL host")
+var testPort = flag.Int("port", 3306, "MySQL port")
 var testUser = flag.String("user", "root", "MySQL user")
 var testPassword = flag.String("password", "", "MySQL password")
 
@@ -52,10 +53,10 @@ var _ = Suite(&schemaTestSuite{})
 
 func (s *schemaTestSuite) SetUpSuite(c *C) {
 	var err error
-	s.conn, err = client.Connect(fmt.Sprintf("%s", *testAddr), *testUser, *testPassword, "")
+	s.conn, err = client.Connect(fmt.Sprintf("%s:%d", *testHost, *testPort), *testUser, *testPassword, "")
 	c.Assert(err, IsNil)
 
-	s.d, err = NewDumper(*execution, fmt.Sprintf("%s", *testAddr), *testUser, *testPassword)
+	s.d, err = NewDumper(*execution, fmt.Sprintf("%s:%d", *testHost, *testPort), *testUser, *testPassword)
 	c.Assert(err, IsNil)
 	c.Assert(s.d, NotNil)
 

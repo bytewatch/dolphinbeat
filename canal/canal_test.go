@@ -32,7 +32,8 @@ import (
 	"github.com/siddontang/go-mysql/replication"
 )
 
-var testAddr = flag.String("addr", "127.0.0.1:3306", "MySQL address")
+var testHost = flag.String("host", "127.0.0.1", "MySQL host")
+var testPort = flag.Int("port", 3306, "MySQL port")
 var testUser = flag.String("user", "root", "MySQL user")
 var testPassword = flag.String("password", "", "MySQL password")
 
@@ -48,7 +49,7 @@ var _ = Suite(&canalTestSuite{})
 
 func (s *canalTestSuite) SetUpSuite(c *C) {
 	cfg := NewDefaultConfig()
-	cfg.Addr = *testAddr
+	cfg.Addr = fmt.Sprintf("%s:%d", *testHost, *testPort)
 	cfg.User = *testUser
 	cfg.Password = *testPassword
 	cfg.HeartbeatPeriod = 200 * time.Millisecond
